@@ -8,6 +8,8 @@ from network import ModelPostNet, Model
 from collections import OrderedDict
 from tqdm import tqdm
 import argparse
+import warnings
+warnings.filterwarnings('ignore')
 
 def load_checkpoint(step, model_name="transformer"):
     state_dict = t.load('%s/checkpoint_%s_%d.pth.tar'% (hp.checkpoint_path, model_name, step))
