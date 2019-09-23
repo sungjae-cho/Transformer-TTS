@@ -57,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--restore_step1', type=int, help='Global step to restore checkpoint', default=172000)
     parser.add_argument('--restore_step2', type=int, help='Global step to restore checkpoint', default=100000)
     parser.add_argument('--max_len', type=int, help='Global step to restore checkpoint', default=400)
+    parser.add_argument('--text', type=str, help='Text to be translated to speech', default="Transformer model is so fast!")
 
     args = parser.parse_args()
-    synthesis("Transformer model is so fast!",args)
+    synthesis(args.text, args)
