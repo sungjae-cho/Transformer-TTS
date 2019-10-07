@@ -51,6 +51,8 @@ def synthesis(text, args):
     wav = spectrogram2wav(mag_pred.squeeze(0).cpu().numpy())
     write(hp.sample_path + "/test.wav", hp.sr, wav)
 
+    return wav
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
