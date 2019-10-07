@@ -10,3 +10,4 @@ runs/
 test.ipynb
 wandb/
 log*
+sample/
