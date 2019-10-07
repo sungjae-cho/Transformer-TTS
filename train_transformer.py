@@ -96,48 +96,83 @@ def main():
 
             hp.image_step = len(dataloader)
             # If this iteration is last in this epoch, then ...
-            if (global_step % hp.image_step) == (hp.image_step - 1):
+            if (global_step % hp.image_step) == (hp.image_step - 1) or (global_step == 1):
+                attn_img_list_old = list()
+                attn_img_list = list()
+                attn_enc_img_list_old = list()
+                attn_enc_img_list = list()
+                attn_dec_img_list_old = list()
+                attn_dec_img_list = list()
+
 
                 for i, prob in enumerate(attn_probs):
 
                     num_h = prob.size(0) # num_h == 3
                     for j in range(4):
 
-                        x = vutils.make_grid(prob[j*16] * 255)
+                        x1 = vutils.make_grid(prob[j*16] * 255)
+                        x2 = vutils.make_grid(prob[j*16])
+
                         #writer.add_image('Attention_%d_0'%global_step, x, i*4+j)
 
                         #wandb.log({"Attention": [wandb.Image(plot_alignment_to_numpy(x.data.cpu().numpy().T, caption='Attention_%d_0'%global_step)]},
                         #          step=i*4+j)
                         #wandb.log({"Attention": wandb.Image(x.data.cpu().numpy().T, caption='Attention_%d_0'%global_step)}, step=i*4+j)
-                        wandb.log({"Attention": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_{}_{}'.format(epoch+1, global_step))]})
+                        #wandb.log({"Attention": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_{}_{}'.format(epoch+1, global_step))]})
+                        #wandb.log({"Attention": [wandb.Image(plot_alignment_to_numpy(x.data.cpu().numpy().T), caption='Attention_{}_{}'.format(epoch+1, global_step))]})
+                        '''wandb.log({"Attention": [
+                            wandb.Image(x1.data.cpu().numpy().T, caption='Attention_{}_{}'.format(epoch+1, global_step)),
+                            wandb.Image(plot_alignment_to_numpy(x2.data.cpu().numpy().T), caption='Attention_{}_{}'.format(epoch+1, global_step))
+                        ]})'''
+
+                        attn_img_list_old.append(wandb.Image(x1.data.cpu().numpy().T, caption='Attention_{}_{}'.format(epoch+1, global_step)))
+                        attn_img_list.append(wandb.Image(plot_alignment_to_numpy(x2.data.cpu().numpy().T), caption='Attention_{}_{}'.format(epoch+1, global_step)))
 
                 for i, prob in enumerate(attns_enc):
-                    num_h = prob.size(0)
 
+                    num_h = prob.size(0)
                     for j in range(4):
 
-                        x = vutils.make_grid(prob[j*16] * 255)
+                        x1 = vutils.make_grid(prob[j*16] * 255)
+                        x2 = vutils.make_grid(prob[j*16])
+
                         #writer.add_image('Attention_enc_%d_0'%global_step, x, i*4+j)
                         #wandb.log({"Attention_enc": [wandb.Image(plot_alignment_to_numpy(x.data.cpu().numpy().T, caption='Attention_enc_%d_0'%global_step)]})
                         #wandb.log({"Attention_enc": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_enc_%d_0'%global_step)]}, step=i*4+j)
-                        wandb.log({"Attention_enc": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_enc_{}_{}'.format(epoch+1, global_step))]})
+                        #wandb.log({"Attention_enc": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_enc_{}_{}'.format(epoch+1, global_step))]})
+                        attn_enc_img_list_old.append(wandb.Image(x1.data.cpu().numpy().T, caption='Attention_enc_{}_{}'.format(epoch+1, global_step)))
+                        attn_enc_img_list.append(wandb.Image(plot_alignment_to_numpy(x2.data.cpu().numpy().T), caption='Attention_enc_{}_{}'.format(epoch+1, global_step)))
 
                 for i, prob in enumerate(attns_dec):
 
                     num_h = prob.size(0)
                     for j in range(4):
 
-                        x = vutils.make_grid(prob[j*16] * 255)
+                        x1 = vutils.make_grid(prob[j*16] * 255)
+                        x2 = vutils.make_grid(prob[j*16])
+
                         #writer.add_image('Attention_dec_%d_0'%global_step, x, i*4+j)
                         #wandb.log({"Attention_dec": [wandb.Image(plot_alignment_to_numpy(x.data.cpu().numpy().T, caption='Attention_dec_%d_0'%global_step)]})
                         #wandb.log({"Attention_dec": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_dec_%d_0'%global_step)]}, step=i*4+j)
-                        wandb.log({"Attention_dec": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_dec_{}_{}'.format(epoch+1, global_step))]})
+                        #wandb.log({"Attention_dec": [wandb.Image(x.data.cpu().numpy().T, caption='Attention_dec_{}_{}'.format(epoch+1, global_step))]})
+                        attn_dec_img_list_old.append(wandb.Image(x1.data.cpu().numpy().T, caption='Attention_dec_{}_{}'.format(epoch+1, global_step)))
+                        attn_dec_img_list.append(wandb.Image(plot_alignment_to_numpy(x2.data.cpu().numpy().T), caption='Attention_dec_{}_{}'.format(epoch+1, global_step)))
+
+                # wandb attention map logging
+                wandb.log({
+                    "Attention_old":attn_img_list_old,
+                    "Attention": attn_img_list,
+                    "Attention_enc_old":attn_enc_img_list_old,
+                    "Attention_enc":attn_enc_img_list,
+                    "Attention_dec_old":attn_dec_img_list_old,
+                    "Attention_dec":attn_dec_img_list
+                })
 
             hp.save_step = 5 * len(dataloader)
             if global_step % hp.save_step == 0:
                 t.save({'model':m.state_dict(),
                         'optimizer':optimizer.state_dict()},
-                    os.path.join(hp.checkpoint_path,'checkpoint_transformer_{}_{}.pth.tar'.format(epoch, global_step)))
+                    os.path.join(hp.checkpoint_path,'checkpoint_transformer_{}.pth.tar'.format(global_step)))
 
 
 if __name__ == '__main__':
