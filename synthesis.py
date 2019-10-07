@@ -11,6 +11,10 @@ import argparse
 import warnings
 warnings.filterwarnings('ignore')
 
+# https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 def load_checkpoint(step, model_name="transformer"):
     state_dict = t.load('%s/checkpoint_%s_%d.pth.tar'% (hp.checkpoint_path, model_name, step))
     new_state_dict = OrderedDict()
@@ -25,6 +29,7 @@ def synthesis(text, args):
     m_post = ModelPostNet()
 
     m.load_state_dict(load_checkpoint(args.restore_step1, "transformer"))
+    print("{} parameters in Transformer".format(count_parameters(m)))
     m_post.load_state_dict(load_checkpoint(args.restore_step2, "postnet"))
 
     text = np.asarray(text_to_sequence(text, [hp.cleaners]))
